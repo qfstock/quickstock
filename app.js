@@ -1,6 +1,6 @@
 'use strict';
 // Yahoo Finance chart API is accessed through the companion Cloudflare Worker.
-const PROXY_BASE='https://pmc.mcraft-tiger-574.workers.dev';
+const PROXY_BASE='https://check.petdamon.workers.dev';
 const $=id=>document.getElementById(id);
 const blank='—';
 const groups=[
