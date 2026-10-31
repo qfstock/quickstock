@@ -93,3 +93,51 @@
   .summary-cell.night-futures-summary-cell .summary-price-line .summary-chart-link{padding:4px 6px;font-size:10px}
   .summary-cell.night-futures-summary-cell .summary-quote-values .summary-change{font-size:10.8px}
 }
+
+/* 4번 반도체 핵심 종목: 모바일에서는 2열로 배치해 가독성 유지 */
+@media(max-width:520px){.summary-row.semiconductor-summary-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.summary-row.semiconductor-summary-row .summary-cell{padding:7px 8px}.summary-row.semiconductor-summary-row .summary-label{font-size:10px}.summary-row.semiconductor-summary-row .summary-price{font-size:11px}.summary-row.semiconductor-summary-row .summary-change{font-size:9px}}
+
+/* 요약 종목별 차트 바로가기: 종목명 오른쪽에 배치 */
+.summary-cell:has(.internal-chart-link){padding-bottom:8px!important}
+.summary-cell .summary-titleline .internal-chart-link{position:static!important;inset:auto!important;transform:none!important;flex:0 0 auto;margin:0!important;padding:4px 7px;font-size:11px;line-height:1.1}
+.summary-cell .summary-titleline{align-items:center}
+.summary-cell .summary-titleline .summary-label{flex:1 1 auto}
+.chart-card{scroll-margin-top:12px}
+.chart-card-highlight{animation:chartCardFocus 1.6s ease}
+@keyframes chartCardFocus{0%,100%{box-shadow:0 2px 10px #26364f08}25%,65%{box-shadow:0 0 0 3px #7da7d9,0 4px 16px #26364f18}}
+@media(max-width:520px){.summary-cell .summary-titleline .internal-chart-link{padding:3px 6px;font-size:10px}.summary-cell:has(.internal-chart-link){padding-bottom:7px!important}}
+
+
+/* 4번 반도체 종목 8개 요약: PC 4열, 모바일 2열로 정돈 */
+.summary-row.semiconductor-summary-row{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.summary-row.semiconductor-summary-row .summary-cell{min-width:0}
+.summary-row.semiconductor-summary-row .summary-titleline{gap:4px}
+.summary-row.semiconductor-summary-row .summary-titleline .summary-label{font-size:12px;letter-spacing:-.3px}
+.summary-row.semiconductor-summary-row .summary-titleline .internal-chart-link{padding:4px 6px;font-size:10px}
+@media(max-width:520px){
+  .summary-row.semiconductor-summary-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+  .summary-row.semiconductor-summary-row .summary-cell{padding:7px 7px}
+  .summary-row.semiconductor-summary-row .summary-titleline{gap:3px;margin-bottom:5px}
+  .summary-row.semiconductor-summary-row .summary-titleline .summary-label{font-size:11px;letter-spacing:-.35px}
+  .summary-row.semiconductor-summary-row .summary-titleline .internal-chart-link{padding:3px 6px;font-size:10px}
+  .summary-row.semiconductor-summary-row .summary-price{font-size:11px}
+  .summary-row.semiconductor-summary-row .summary-change{font-size:9px}
+}
+
+
+/* 야간선물 차트 버튼도 다른 종목과 동일하게 종목명 오른쪽에 배치 */
+.summary-cell.night-futures-summary-cell{padding-bottom:8px!important}
+.summary-cell.night-futures-summary-cell .summary-titleline{display:flex;align-items:center;justify-content:space-between;gap:4px;min-width:0;margin-bottom:6px}
+.summary-cell.night-futures-summary-cell .summary-titleline .summary-label{flex:1 1 auto;min-width:0;white-space:nowrap}
+.summary-cell.night-futures-summary-cell .summary-titleline .summary-chart-link{position:static!important;inset:auto!important;transform:none!important;align-self:center;flex:0 0 auto;margin:0!important;padding:4px 7px;font-size:11px;line-height:1.1}
+@media(max-width:520px){
+  .summary-cell.night-futures-summary-cell{padding:7px 5px!important}
+  .summary-cell.night-futures-summary-cell .summary-titleline{gap:3px;margin-bottom:5px}
+  .summary-cell.night-futures-summary-cell .summary-titleline .summary-label{font-size:10px;letter-spacing:-.3px}
+  .summary-cell.night-futures-summary-cell .summary-titleline .summary-chart-link{padding:3px 6px;font-size:10px}
+}
+
+
+/* M7 및 지정 요약칸: 기존 회색 톤과 어울리는 아주 옅은 녹색 */
+.summary-cell.m7-summary-cell,
+.summary-cell.soft-green-summary-cell{background-color:#f5f8f2!important;border-color:#edf0f5!important}
