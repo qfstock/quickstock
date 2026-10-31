@@ -141,3 +141,124 @@
 /* M7 및 지정 요약칸: 기존 회색 톤과 어울리는 아주 옅은 녹색 */
 .summary-cell.m7-summary-cell,
 .summary-cell.soft-green-summary-cell{background-color:#f5f8f2!important;border-color:#edf0f5!important}
+
+
+/* 요약 강조칸: 기본 회색보다 살짝 어두운 중성 회색 */
+.summary-cell.m7-summary-cell{background-color:var(--soft)!important;border-color:#edf0f5!important}
+.summary-cell.soft-green-summary-cell{background-color:#eef1f5!important;border-color:#e2e7ee!important}
+
+/* 차트 버튼: 요약칸보다 한 톤 어두운 밝은 회색 */
+.summary-cell .summary-chart-link{
+  background:#dce3ec!important;
+  color:#465467!important;
+  border:1px solid #cfd8e3!important;
+  box-shadow:none!important;
+}
+.summary-cell .summary-chart-link:active{opacity:.8}
+
+/* 차트 버튼 글자는 검정 대신 밝은 흰색으로 표시 */
+.summary-cell .summary-chart-link{
+  color:#ffffff!important;
+}
+
+
+/* 차트 버튼 글자: 버튼 배경보다 어둡되 검정처럼 강하지 않은 슬레이트 회색 */
+.summary-cell .summary-chart-link{color:#64748b!important}
+
+/* 요약 종목: 정규장 종가 + 애프터마켓 현재가 */
+.summary-afterhours-price{font-size:12px;font-weight:700;line-height:1.12;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.summary-afterhours-change{font-size:10px;font-weight:600;line-height:1.1;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:520px){.summary-afterhours-price{font-size:10.8px;line-height:1.08;margin-top:1px}.summary-afterhours-change{font-size:9px;line-height:1.08;margin-top:0}}
+
+
+/* 요약 종목의 프리마켓·정규장·애프터마켓 시세: 종가 아래의 무테두리 음영 박스 */
+.summary-session-box{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:3px;
+  margin-top:5px;
+  padding:4px 3px;
+  border:0;
+  border-radius:5px;
+  background:rgba(35,48,68,.055);
+  min-width:0;
+}
+.summary-session-item{display:flex;flex-direction:column;align-items:center;min-width:0;gap:1px}
+.summary-session-label{font-size:9px;font-weight:750;line-height:1.1;color:#718096;white-space:nowrap}
+.summary-session-value{font-size:10.5px;font-weight:750;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.summary-session-delta,.summary-session-pct{font-size:8.5px;font-weight:600;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+@media(max-width:520px){
+  .summary-session-box{gap:2px;margin-top:4px;padding:4px 2px}
+  .summary-session-label{font-size:8px}
+  .summary-session-value{font-size:9px}
+  .summary-session-delta,.summary-session-pct{font-size:7.5px}
+}
+
+
+/* SOX 구성종목 상위 16개: PC 4열 x 3행, 모바일 2열 */
+.summary-row.semiconductor-summary-row{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.summary-row.semiconductor-summary-row .summary-cell{min-width:0}
+.summary-row.semiconductor-summary-row .summary-titleline{gap:4px}
+.summary-row.semiconductor-summary-row .summary-titleline .summary-label{font-size:11px;letter-spacing:-.35px}
+.summary-row.semiconductor-summary-row .summary-titleline .internal-chart-link{padding:4px 6px;font-size:10px}
+.summary-row.single-index-row{grid-template-columns:minmax(0,1fr)}
+.summary-row.single-index-row .summary-cell{max-width:none}
+.summary-row.summary-divider-before{margin-top:8px;padding-top:8px;border-top:1px solid #dce3ec}
+.summary-row.summary-divider-after{margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #dce3ec}
+@media(max-width:520px){
+  .summary-row.semiconductor-summary-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+  .summary-row.semiconductor-summary-row .summary-cell{padding:7px 6px}
+  .summary-row.semiconductor-summary-row .summary-titleline{gap:3px;margin-bottom:5px}
+  .summary-row.semiconductor-summary-row .summary-titleline .summary-label{font-size:10px;letter-spacing:-.4px}
+  .summary-row.semiconductor-summary-row .summary-titleline .internal-chart-link{padding:3px 5px;font-size:9px}
+  .summary-row.semiconductor-summary-row .summary-price{font-size:10px}
+  .summary-row.semiconductor-summary-row .summary-change{font-size:9px}
+}
+
+/* 차트 영역도 요약과 같은 M7 / SOX / SK hynix / 반도체 구간 구분 */
+.chart-card.chart-divider-before{margin-top:9px;padding-top:15px;border-top:2px solid #dce3ec}
+
+/* 반도체 상위 16개 종목: 요약과 차트 모두 접기/펼치기 */
+[hidden]{display:none!important}
+.semiconductor-toggle-row,.chart-semiconductor-toggle-row{display:flex;justify-content:center;align-items:center;margin:5px 0}
+.semiconductor-toggle{width:100%;min-height:34px;padding:7px 12px;border:1px solid #dce3ec;border-radius:8px;background:#eef1f5;color:#536276;font-size:11px;font-weight:750;letter-spacing:-.15px;cursor:pointer;transition:background .15s ease,border-color .15s ease}
+.semiconductor-toggle:active{background:#e4e9f0}
+.semiconductor-toggle:focus-visible{outline:2px solid #8aa6c8;outline-offset:2px}
+.chart-semiconductor-content{display:flex;flex-direction:column;gap:9px;min-width:0}
+.chart-semiconductor-toggle-row{margin:0 0 0}
+@media(min-width:760px){.semiconductor-toggle{min-height:36px;font-size:12px}}
+
+/* 반도체 구성 종목 펼침 영역을 필라델피아 반도체 지수 카드 내부에 포함 */
+.semiconductor-toggle-in-cell,
+.semiconductor-toggle-in-chart{
+  background:var(--soft);
+  border-color:#edf0f5;
+  color:#536276;
+}
+.semiconductor-toggle-in-cell{margin-top:9px;}
+.semiconductor-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:5px;
+  margin-top:7px;
+}
+.semiconductor-summary-grid .summary-cell{
+  background:var(--soft);
+  border-color:#edf0f5;
+  padding:8px 9px;
+}
+.chart-semiconductor-content{
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px solid #e5eaf1;
+}
+.chart-semiconductor-content .chart-card{
+  background:var(--soft);
+  border-color:#e8edf3;
+  box-shadow:none;
+}
+.chart-semiconductor-content .chart-card.chart-divider-before{margin-top:0;padding-top:12px;border-top:1px solid #dce3ec;}
+@media(max-width:760px){
+  .semiconductor-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}
+  .semiconductor-summary-grid .summary-cell{padding:7px 7px;}
+}
