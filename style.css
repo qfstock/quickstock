@@ -1,21 +1,95 @@
-*{box-sizing:border-box} :root{--bg:#f3f5f9;--card:#fff;--line:#e6eaf1;--text:#202938;--muted:#929dad;--accent:#263e60}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;font-size:12px}.app{max-width:850px;margin:auto;min-height:100vh}header{height:61px;display:flex;align-items:center;justify-content:space-between;padding:0 15px;background:#ffffffed;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}.brand{display:flex;gap:8px;align-items:center}.brand i{width:4px;height:19px;background:#4ac18a;border-radius:4px}.brand b{font-size:16px}.brand small{display:block;font-size:8px;color:#9aa3af;letter-spacing:.7px;margin-top:2px}.tools{display:flex;gap:6px}.tools button{border:1px solid #edf0f4;background:#f8f9fb;border-radius:10px;width:32px;height:32px;color:#667386}main{padding:10px}.search-card,.card,.metric{background:var(--card);border:1px solid var(--line);border-radius:13px;min-width:0;box-shadow:0 2px 10px #26364f08}.search-card{padding:15px;margin-bottom:9px}.search-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.eyebrow{font-size:8px;font-weight:800;letter-spacing:1.3px;color:#6a8baf}.search-heading h2{font-size:17px;margin:4px 0}.search-heading p,.status{font-size:10px;color:var(--muted);margin:0}.search-symbol{font-size:30px;color:#5276a3}.searchbox{display:flex;gap:8px;align-items:center;padding:5px 5px 5px 12px;background:#fff;border:1px solid #dfe6ef;border-radius:12px}.searchbox input{min-width:0;flex:1;border:0;outline:0;font-size:13px;padding:9px 0}.search-btn{border:0;background:var(--accent);color:white;border-radius:9px;padding:10px 12px;white-space:nowrap}.clear{border:0;border-radius:50%}.quickline{display:flex;gap:8px;margin-top:10px;align-items:flex-start}.quickline>span{color:var(--muted);white-space:nowrap;padding-top:5px}.quick{display:flex;gap:5px;flex-wrap:wrap}.quick button{border:1px solid var(--line);background:#fff;border-radius:18px;padding:5px 8px;color:var(--text);font-size:10px}.results{margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:white}.result{width:100%;padding:10px;text-align:left;border:0;border-bottom:1px solid var(--line);background:white;display:flex;gap:8px;justify-content:space-between}.result small{margin-left:auto;color:var(--muted)}.quote{padding:12px;margin-bottom:7px}.name{display:flex;justify-content:space-between;align-items:center;font-weight:700}.name small{display:block;color:var(--muted);font-size:9px;font-weight:400}.name button{border:0;background:none;font-size:22px;color:#d8b153}.price{text-align:right;font-size:21px;font-weight:800;margin-top:-10px}.price span{font-size:10px;font-weight:500;color:#4f77bf}.grid{display:grid;gap:5px;margin-bottom:7px}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.metric{padding:8px;overflow:hidden}.metric label,.eps>label{display:block;font-size:9px;line-height:1.4;color:var(--muted);margin-bottom:4px}.metric b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.flows .metric{padding:7px 5px}.flows label{min-height:25px;white-space:nowrap;font-size:9px;letter-spacing:-.25px}.flows label small{display:inline;font-size:8px;letter-spacing:0}.flows .metric b{white-space:normal;overflow:visible;text-overflow:clip;font-size:9px}.flows .flow-period{display:block;font-size:11px;line-height:1.65;white-space:nowrap}.flows .flow-period span{font-size:inherit}.flows .flow-period .flow-count{font-size:12px!important;font-weight:600}.flows .flow-period .flow-suffix{font-size:8px!important;color:#111!important;font-weight:500;letter-spacing:-.1px}.flows .flow-period .flow-shares{font-size:9px;letter-spacing:-.9px}.flows .metric b{font-size:11px}.flows em{display:block;font-size:9px;font-style:normal;margin-top:3px;color:#df5967}.flows em.sell-streak{color:#3979d8;margin-top:2px}.eps{padding:9px 10px;margin-bottom:7px}.epsrow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;text-align:center}.epsrow div{font-size:8px;color:var(--muted);overflow-wrap:anywhere}.epsrow b{display:block;font-size:10px;color:var(--text);margin-top:3px}.chartcard{padding:12px 10px 9px;overflow:hidden}.charttitle{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px}.charttitle b{font-size:13px}.charttitle span{font-size:9px;color:var(--muted);text-align:right}.cons{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px;border:1px solid #edf0f4;border-radius:8px;padding:8px;font-size:8px;color:var(--muted);margin-bottom:7px}.cons b{color:var(--text)}.chart-scroll{width:100%;overflow-x:hidden;overflow-y:hidden;max-width:100%}.chart{height:345px;width:100%;display:block;position:relative;overflow:hidden;min-width:0}.profit-svg{display:block;width:100%;min-width:0;height:340px;overflow:hidden;color:var(--text)}.chart-empty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;color:var(--muted);font-size:10px}.labels{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;padding-top:5px;width:100%;min-width:0}.labels span{text-align:center;min-width:0;overflow-wrap:anywhere;white-space:normal;font-size:clamp(8px,2.2vw,10px);line-height:1.2;font-weight:600;padding:0 1px}.hint,.disclaimer,footer{text-align:center;color:var(--muted);font-size:8px;padding:5px 3px}.dark{--bg:#151a22;--card:#202733;--line:#303a49;--text:#edf1f6;--muted:#9aa6b8;--accent:#38577f}.dark header{background:#1c232e}.dark .searchbox,.dark .quick button,.dark .results,.dark .result{background:#202733;color:var(--text);border-color:#303a49}.dark .cons{border-color:var(--line)}@media(max-width:420px){main{padding:7px}.metric{padding:7px 4px}.metric b{font-size:10px}.price{font-size:19px}.charttitle{align-items:flex-start;flex-direction:column}.charttitle span{text-align:left}.cons{font-size:8px}.flows label{font-size:8px}}
+*{box-sizing:border-box}:root{--bg:#f3f5f9;--card:#fff;--line:#e5eaf1;--text:#202938;--muted:#8995a6;--accent:#263e60;--up:#d83b4b;--down:#2874d0;--soft:#f7f9fc}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;font-size:12px}.app{max-width:1000px;margin:auto;min-height:100vh}header{height:61px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#ffffffed;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}.brand{display:flex;gap:9px;align-items:center}.brand i{width:4px;height:22px;background:#4ac18a;border-radius:4px}.brand b{font-size:16px}.brand small{display:block;font-size:8px;color:#9aa3af;letter-spacing:.8px;margin-top:3px}.tools{display:flex;gap:10px;align-items:center}.tools span{font-size:9px;color:var(--muted)}.tools button{border:1px solid var(--line);background:#f8f9fb;border-radius:10px;width:34px;height:34px;color:#667386;font-size:19px}main{padding:12px}.card,.chart-card{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:0 2px 10px #26364f08;min-width:0}.intro{padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}.eyebrow{font-size:8px;font-weight:800;letter-spacing:1.25px;color:#6a8baf}.intro h1{font-size:18px;margin:5px 0 6px}.intro p{font-size:10px;color:var(--muted);margin:0}.intro-meta{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:9px;white-space:nowrap}.live-dot{width:6px;height:6px;border-radius:50%;background:#aab4c2}.live-dot.active{background:#37b87d}.summary{padding:13px;margin-bottom:15px}.section-heading{display:flex;align-items:end;justify-content:space-between;gap:10px;margin-bottom:10px}.section-heading h2{font-size:15px;margin:3px 0 0}.section-heading>small{font-size:9px;color:var(--muted);text-align:right}.summary-rows{display:flex;flex-direction:column;gap:5px}.summary-row{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:5px}.summary-cell{border:1px solid #edf0f5;background:var(--soft);border-radius:8px;padding:8px 9px;min-width:0}.summary-label{font-size:11px;font-weight:800;color:#34445b;letter-spacing:-.15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}.summary-price{font-size:12px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.summary-change{font-size:10px;margin-top:3px;white-space:nowrap}.up{color:var(--up)!important}.down{color:var(--down)!important}.neutral{color:var(--muted)!important}.chart-section-heading{padding:0 2px;margin:18px 0 9px}.charts{display:flex;flex-direction:column;gap:9px}.chart-card{padding:12px 12px 7px;overflow:hidden}.chart-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}.chart-title{min-width:0}.chart-title .number{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;background:#edf2f8;color:#58708f;border-radius:6px;font-size:10px;font-weight:800;margin-right:5px}.chart-title h3{display:inline;font-size:13px;margin:0}.chart-subtitle{font-size:9px;color:var(--muted);margin:4px 0 0 25px}.quote-block{text-align:right;flex-shrink:0}.quote-close{font-size:14px;font-weight:800;white-space:nowrap}.quote-change{font-size:10px;margin-top:3px;white-space:nowrap}.quote-date{font-size:8px;color:var(--muted);margin-top:4px}.chart-area{height:205px;width:100%;position:relative}.chart-area .chart-empty{height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:10px;background:linear-gradient(180deg,#fafbfd,#fff);border-radius:8px}.chart-area canvas{display:block}.chart-foot{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:8px;padding:3px 1px 0}.chart-foot .bar-count{color:#6c7e94}footer{padding:18px 4px 24px;color:var(--muted);font-size:9px;line-height:1.6}.error-note{color:#ad6b19!important}.loading{opacity:.75}@media(min-width:760px){main{padding:16px}.summary{padding:15px}.summary-cell{padding:9px 11px}.chart-card{padding:14px 15px 8px}.chart-area{height:240px}.chart-top{align-items:center}.chart-title h3{font-size:14px}}@media(max-width:520px){header{padding:0 11px}.brand b{font-size:14px}.tools{gap:6px}.tools span{max-width:120px;text-align:right;line-height:1.3}main{padding:8px}.intro{padding:12px;display:block}.intro h1{font-size:16px;line-height:1.35}.intro-meta{margin-top:10px}.summary{padding:9px}.section-heading h2{font-size:14px}.section-heading>small{font-size:8px}.summary-row{gap:3px}.summary-cell{padding:7px 5px}.summary-label{font-size:10px;font-weight:800;color:#34445b;margin-bottom:5px}.summary-price{font-size:10px}.summary-change{font-size:9px}.chart-card{padding:10px 8px 6px}.chart-title h3{font-size:12px}.chart-title .number{width:18px;height:18px;margin-right:3px}.chart-subtitle{margin-left:22px}.quote-close{font-size:12px}.quote-change{font-size:9px}.chart-area{height:190px}.quote-date{font-size:7px}}
+.tradingview-frame{display:block;width:100%;height:360px;border:0;background:#fff}
+@media(max-width:600px){.tradingview-frame{height:320px}}
 
-/* 빠른 검색: 시장별/거래지표별 상위 10개 */
-.quick-rankings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
-.quick-group-full{grid-column:1 / -1}
-.quick-group{min-width:0;border:1px solid var(--line);border-radius:10px;padding:9px;background:var(--card)}
-.quick-group h3{font-size:10px;line-height:1.4;margin:0 0 7px;color:var(--text)}
-.quick-group .quick{display:flex;flex-wrap:wrap;gap:4px}
-.quick-group .quick button{font-size:9px;padding:5px 7px;max-width:100%;overflow-wrap:anywhere}
-.quick-group .quick button small{font-size:8px;color:var(--muted);margin-right:3px}
-.quick-loading{font-size:9px;color:var(--muted)}
-@media(max-width:420px){.quick-rankings{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.quick-group{padding:7px}.quick-group h3{font-size:9px}.quick-group .quick{gap:3px}.quick-group .quick button{font-size:8px;padding:5px 6px}}
+/* Embedded market widgets */
+.tradingview-frame{display:block;width:100%;height:360px;border:0;background:#fff}
+@media(max-width:600px){.tradingview-frame{height:320px}}
 
-/* 빠른 검색 순위: 첫 줄은 고정 표시, 나머지는 화살표로 펼치기 */
-.quick-more{grid-column:1 / -1;min-width:0}
-.quick-more summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font-size:10px;font-weight:700;user-select:none}
-.quick-more summary::-webkit-details-marker{display:none}
-.quick-arrow{font-size:17px;line-height:12px;transition:transform .15s ease}
-.quick-more[open] .quick-arrow{transform:rotate(180deg)}
-.quick-more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
-@media(max-width:420px){.quick-more-grid{gap:5px}.quick-more summary{min-height:34px}}
+/* Reliable external-chart cards for symbols that block iframe embedding */
+.external-chart-panel{height:100%;min-height:205px;border-radius:8px;background:linear-gradient(135deg,#f8fafc,#eef3f8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center;border:1px solid #e7edf4}
+.external-chart-note{font-size:11px;color:#6f7e91;line-height:1.6}
+.external-chart-link{display:inline-flex;align-items:center;justify-content:center;max-width:100%;padding:11px 16px;border-radius:9px;background:#263e60;color:#fff;text-decoration:none;font-size:11px;font-weight:700;line-height:1.5;box-shadow:0 2px 5px #26364f12}
+.external-chart-link:active{opacity:.8}
+@media(min-width:760px){.external-chart-panel{min-height:240px}}
+@media(max-width:520px){.external-chart-panel{min-height:190px;padding:14px}.external-chart-link{font-size:10px;padding:10px 12px}}
+.chart-range-toolbar{display:flex;align-items:center;gap:5px;overflow-x:auto;margin:0 0 5px;padding:1px 0 4px;scrollbar-width:none}.chart-range-toolbar::-webkit-scrollbar{display:none}.chart-range-toolbar button{flex:0 0 auto;border:1px solid #e3e8ef;border-radius:5px;background:#fff;color:#65758a;padding:5px 10px;font:600 10px -apple-system,BlinkMacSystemFont,sans-serif;line-height:1.2}.chart-range-toolbar button.selected{background:#eaf0f8;color:#263e60;border-color:#cbd8e8}.tradingview-frame{display:block;width:100%;height:100%;min-height:190px;border:0;border-radius:8px;background:#fff}@media(min-width:760px){.chart-range-toolbar button{padding:6px 12px;font-size:11px}}
+
+/* TradingView embedded advanced charts for KRX continuous futures */
+.tradingview-frame{display:block;width:100%;height:100%;min-height:350px;border:0;border-radius:8px;background:#fff}
+@media(max-width:600px){.tradingview-frame{min-height:340px}}
+/* KRED live night-futures page embed */
+.kred-frame{display:block;width:100%;height:650px;min-height:650px;border:0;border-radius:8px;background:#fff}
+@media(max-width:600px){.kred-frame{height:610px;min-height:610px}}
+
+/* KRED night futures iframe; cache-busted build */
+.kred-frame{display:block;width:100%;height:420px;min-height:360px;border:0;border-radius:8px;background:#fff}
+@media(max-width:600px){.kred-frame{height:430px;min-height:400px}}
+
+/* Night futures remain in the summary; only external links are shown, no chart cards. */
+.night-futures-links{padding:16px;margin-top:18px}.night-futures-links .section-heading{margin-bottom:10px}.night-link-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid #edf0f5;font-size:14px}.night-link-row a{color:#2563c7;text-decoration:none;font-weight:600;white-space:nowrap}.night-link-row a:hover{text-decoration:underline}
+
+/* Larger, clearer pre-market summary typography and inline night-futures chart links. */
+.summary-titleline{display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0;margin-bottom:6px}
+.summary-titleline .summary-label{margin:0;min-width:0;font-size:16px;font-weight:800;line-height:1.25;letter-spacing:-.2px}
+.summary-chart-link{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:6px;background:#263e60;color:#fff;text-decoration:none;font-size:12px;font-weight:800;line-height:1.2}
+.summary-chart-link:active{opacity:.8}
+.summary-price{font-size:18px;font-weight:800}
+.summary-change{font-size:15px;font-weight:650}
+@media(max-width:520px){.summary-titleline{gap:3px;margin-bottom:5px}.summary-titleline .summary-label{font-size:15px;letter-spacing:-.35px}.summary-chart-link{padding:4px 7px;font-size:11px}.summary-price{font-size:15px}.summary-change{font-size:13.5px}}
+
+/* Summary typography set to 1.2x the original size. */
+.summary-titleline .summary-label{font-size:13.2px}
+.summary-chart-link{font-size:14.4px}
+.summary-price{font-size:14.4px}
+.summary-change{font-size:12px}
+@media(max-width:520px){
+  .summary-titleline .summary-label{font-size:12px}
+  .summary-chart-link{font-size:13.2px}
+  .summary-price{font-size:12px}
+  .summary-change{font-size:10.8px}
+}
+
+/* Move only the two night-futures summary chart buttons to the bottom-right. */
+.summary-cell:has(.summary-chart-link){position:relative;padding-bottom:34px}
+.summary-cell .summary-titleline .summary-chart-link{position:absolute;right:9px;bottom:8px}
+@media(max-width:520px){
+  .summary-cell:has(.summary-chart-link){padding-bottom:31px}
+  .summary-cell .summary-titleline .summary-chart-link{right:5px;bottom:6px}
+}
+
+
+/* Explicitly anchor the two night-futures chart buttons to the cell's bottom-right. */
+.summary-cell.night-futures-summary-cell{position:relative!important;padding-bottom:38px!important}
+.summary-cell.night-futures-summary-cell .summary-titleline .summary-chart-link{
+  position:absolute!important;top:auto!important;right:9px!important;bottom:8px!important;
+  margin:0!important;transform:none!important;z-index:2
+}
+@media(max-width:520px){
+  .summary-cell.night-futures-summary-cell{padding-bottom:35px!important}
+  .summary-cell.night-futures-summary-cell .summary-titleline .summary-chart-link{
+    right:5px!important;bottom:6px!important
+  }
+}
+
+/* Keep night-futures chart links inline beside the index value, not on a separate lower line. */
+.summary-cell.night-futures-summary-cell{padding-bottom:8px!important}
+.summary-cell.night-futures-summary-cell .summary-price-line{display:flex;align-items:center;justify-content:space-between;gap:4px;min-width:0}
+.summary-cell.night-futures-summary-cell .summary-price-line .summary-price{min-width:0}
+.summary-cell.night-futures-summary-cell .summary-price-line .summary-chart-link{position:static!important;inset:auto!important;transform:none!important;margin:0!important;flex:0 0 auto;padding:3px 7px;font-size:11px;line-height:1.1}
+@media(max-width:520px){.summary-cell.night-futures-summary-cell{padding-bottom:7px!important}.summary-cell.night-futures-summary-cell .summary-price-line .summary-chart-link{padding:3px 6px;font-size:10px}}
+
+
+/* Keep the chart link at the right of both quote lines (price + change). */
+.summary-cell.night-futures-summary-cell{padding-bottom:8px!important}
+.summary-cell.night-futures-summary-cell .summary-price-line{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
+.summary-cell.night-futures-summary-cell .summary-quote-values{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-width:0;flex:1 1 auto}
+.summary-cell.night-futures-summary-cell .summary-quote-values .summary-price{white-space:nowrap}
+.summary-cell.night-futures-summary-cell .summary-quote-values .summary-change{white-space:nowrap;margin-top:3px}
+.summary-cell.night-futures-summary-cell .summary-price-line .summary-chart-link{position:static!important;inset:auto!important;transform:none!important;margin:0!important;flex:0 0 auto;align-self:center;padding:4px 8px;font-size:11px;line-height:1.1}
+@media(max-width:520px){
+  .summary-cell.night-futures-summary-cell{padding:7px 5px!important}
+  .summary-cell.night-futures-summary-cell .summary-price-line{gap:3px}
+  .summary-cell.night-futures-summary-cell .summary-price-line .summary-chart-link{padding:4px 6px;font-size:10px}
+  .summary-cell.night-futures-summary-cell .summary-quote-values .summary-change{font-size:10.8px}
+}
