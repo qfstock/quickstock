@@ -1,6 +1,6 @@
 'use strict';
 // Yahoo Finance chart API is accessed through the companion Cloudflare Worker.
-const PROXY_BASE='https://check.petdamon.workers.dev';
+const PROXY_BASE='https://pmc.mcraft-tiger-574.workers.dev';
 const $=id=>document.getElementById(id);
 const blank='—';
 const groups=[
@@ -57,6 +57,13 @@ groups[0].items=[
 const all=groups.flatMap(g=>g.items);
 const dataById=new Map(),charts=new Map();
 let semiconductorExpanded=false;
+const ACTIVITY_TYPES={
+  turnover:{label:'거래대금 상위(20종목)',metric:'turnover',expanded:false,items:[],containerId:'activity-turnover-summary',chartContainerId:'activity-turnover-charts'},
+  volume:{label:'거래량 상위(20종목)',metric:'volume',expanded:false,items:[],containerId:'activity-volume-summary',chartContainerId:'activity-volume-charts'}
+};
+let activityQuotesCache=null;
+let activityQuotesFetchedAt=0;
+let activityLoadPromise=null;
 function updateSemiconductorToggles(){
   document.querySelectorAll('[data-semiconductor-content]').forEach(el=>{el.hidden=!semiconductorExpanded;});
   document.querySelectorAll('[data-semiconductor-toggle]').forEach(button=>{
@@ -81,6 +88,110 @@ function colorClass(n){return n>0?'up':n<0?'down':'neutral';}
 function closeText(item,n){if(n==null)return blank;let suffix=item.suffix||'';if(item.unit==='yield')return `${fmt(n,item.decimals??3)}%`;if(item.unit==='fx')return `${fmt(n,item.decimals??2)}원`;if(item.unit==='commodity')return `$${fmt(n,item.decimals??2)}`;if(item.unit==='stock')return `$${fmt(n,2)}`;return `${fmt(n,item.decimals??2)}${suffix}`;}
 function changeText(item,n){if(n==null)return blank;const dec=item.unit==='yield'?3:2;const value=signed(n,dec);if(item.unit==='commodity'||item.unit==='stock')return `$ ${value}`;const suffix=item.unit==='yield'?'%p':item.unit==='fx'?'원':'';return `${value}${suffix}`;}
 function pctText(n){return n==null?blank:`${n>0?'+':''}${fmt(n,2)}%`;}
+async function fetchActivityQuotes(force=false){
+  if(!force&&activityQuotesCache&&Date.now()-activityQuotesFetchedAt<60000)return activityQuotesCache;
+  if(activityLoadPromise)return activityLoadPromise;
+  activityLoadPromise=(async()=>{
+    const target='https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?count=250&scrIds=most_actives&formatted=false&lang=en-US&region=US';
+    const response=await fetch(`${PROXY_BASE}/?url=${encodeURIComponent(target)}`,{cache:'no-store'});
+    if(!response.ok)throw new Error(`미국 주식 스크리너 HTTP ${response.status}`);
+    let json;
+    try{json=await response.json();}
+    catch{throw new Error('시세 제공처가 JSON이 아닌 응답을 반환했습니다. Cloudflare Worker 배포와 Yahoo 응답을 확인해 주세요.');}
+    if(json?.finance?.error)throw new Error(`Yahoo 스크리너 오류: ${json.finance.error.description||json.finance.error.code||'응답 오류'}`);
+    const quotes=json?.finance?.result?.[0]?.quotes||[];
+    const clean=quotes.filter(q=>q.symbol&&Number(q.regularMarketPrice)>0&&Number(q.regularMarketVolume)>0&&(!q.quoteType||q.quoteType==='EQUITY'))
+      .map(q=>({...q,activityPrice:Number(q.regularMarketPrice),activityVolume:Number(q.regularMarketVolume),activityTurnover:Number(q.regularMarketPrice)*Number(q.regularMarketVolume)}))
+      .filter(q=>Number.isFinite(q.activityTurnover)&&q.activityTurnover>0);
+    if(clean.length<20)throw new Error(`미국 주식 후보가 ${clean.length}개만 조회되었습니다. Worker의 Yahoo 스크리너 허용 경로와 Yahoo 응답을 확인해 주세요.`);
+    activityQuotesCache=clean;activityQuotesFetchedAt=Date.now();return clean;
+  })().finally(()=>{activityLoadPromise=null;});
+  return activityLoadPromise;
+}
+function buildActivityItems(type,quotes){
+  const config=ACTIVITY_TYPES[type],metric=config.metric;
+  const ranked=[...quotes].sort((a,b)=>b[metric==='turnover'?'activityTurnover':'activityVolume']-a[metric==='turnover'?'activityTurnover':'activityVolume']).slice(0,20);
+  config.items=ranked.map(q=>{
+    const ticker=q.symbol;
+    const name=q.shortName||q.longName||ticker;
+    const item={id:`activity-${type}-${ticker.replace(/[^A-Za-z0-9_-]/g,'_')}`,no:'',name,ticker,unit:'stock',activityType:type,
+      activityRankValue:q[metric==='turnover'?'activityTurnover':'activityVolume'],activityVolume:q.activityVolume,activityTurnover:q.activityTurnover,
+      last:q.activityPrice,screenerLast:q.activityPrice,delta:Number.isFinite(Number(q.regularMarketChange))?Number(q.regularMarketChange):null,
+      pct:Number.isFinite(Number(q.regularMarketChangePercent))?Number(q.regularMarketChangePercent):null,
+      screenerDelta:Number.isFinite(Number(q.regularMarketChange))?Number(q.regularMarketChange):null,
+      screenerPct:Number.isFinite(Number(q.regularMarketChangePercent))?Number(q.regularMarketChangePercent):null,
+      prev:Number.isFinite(Number(q.regularMarketPreviousClose))?Number(q.regularMarketPreviousClose):null,
+      regularMarketPrice:q.activityPrice,regularMarketDelta:Number.isFinite(Number(q.regularMarketChange))?Number(q.regularMarketChange):null,
+      regularMarketPct:Number.isFinite(Number(q.regularMarketChangePercent))?Number(q.regularMarketChangePercent):null};
+    const existing=all.find(x=>x.id===item.id);if(existing){Object.assign(existing,item);return existing;}all.push(item);return item;
+  });
+  return config.items;
+}
+function updateActivityButtons(){
+  Object.entries(ACTIVITY_TYPES).forEach(([type,config])=>{
+    document.querySelectorAll(`[data-activity-toggle="${type}"]`).forEach(button=>{
+      button.textContent=`${config.label} ${config.expanded?'접기 ▲':'펼치기 ▼'}`;
+      button.setAttribute('aria-expanded',String(config.expanded));
+    });
+    document.querySelectorAll(`[data-activity-result="${type}"]`).forEach(row=>row.hidden=!config.expanded);
+    const chartGrid=$(config.chartContainerId);if(chartGrid)chartGrid.hidden=!config.expanded;
+  });
+  if(Object.values(ACTIVITY_TYPES).some(config=>config.expanded))requestAnimationFrame(resizeCharts);
+}
+async function toggleActivity(type){
+  const config=ACTIVITY_TYPES[type];
+  if(config.expanded){config.expanded=false;updateActivityButtons();return;}
+  config.expanded=true;updateActivityButtons();
+  const status=$('status');const previous=status.textContent;status.textContent=`미국 주식 ${config.label} 조회 중…`;
+  try{
+    const quotes=await fetchActivityQuotes();
+    buildActivityItems(type,quotes);
+    const grid=$(config.containerId);if(grid){grid.innerHTML='';config.items.forEach(item=>grid.appendChild(makeSummaryCell({no:'',id:item.id,name:item.name,ticker:item.ticker})));}
+    const chartGrid=$(config.chartContainerId);if(chartGrid){await renderActivityCharts(type,chartGrid);}
+    updateSummary();
+    status.textContent=previous;status.classList.remove('error-note');
+  }catch(error){
+    // 실패해도 펼친 상태를 유지해 사용자가 오류 내용을 바로 확인할 수 있게 합니다.
+    config.expanded=true;updateActivityButtons();
+    const message=String(error?.message||error||'알 수 없는 오류');
+    const grid=$(config.containerId);if(grid)grid.innerHTML=`<div class="chart-empty activity-error">조회 실패: ${message}</div>`;
+    const chartGrid=$(config.chartContainerId);if(chartGrid)chartGrid.innerHTML=`<div class="chart-empty activity-error">조회 실패: ${message}</div>`;
+    status.textContent='미국 주식 상위 종목 조회 실패';status.classList.add('error-note');
+  }
+}
+async function renderActivityCharts(type,grid){
+  const config=ACTIVITY_TYPES[type];
+  if(grid.dataset.loaded==='true')return;
+  grid.innerHTML='';grid.dataset.loaded='true';
+  config.items.forEach(item=>{
+    const card=document.createElement('article');card.className='chart-card activity-chart-card';card.id=`chart-card-${item.id}`;
+    card.innerHTML=`<div class="chart-top"><div class="chart-title"><h3>${item.name} [${item.ticker}]</h3></div><div class="quote-block"><div class="quote-close">${closeText(item,item.last)}</div><div class="quote-change ${colorClass(item.delta)}">${changeText(item,item.delta)} · ${pctText(item.pct)}</div><div class="quote-date">거래량 ${fmt(item.activityVolume,0)}</div></div></div><div id="chart-${item.id}" class="chart-area"><div class="chart-empty">차트 불러오는 중…</div></div><div class="chart-foot"><span class="chart-note">${item.ticker}</span><span class="bar-count">거래대금 ${fmt(item.activityTurnover/1e6,1)}M USD</span></div>`;
+    item.card=card;grid.appendChild(card);
+  });
+  let cursor=0;const workers=Array.from({length:5},async()=>{while(cursor<config.items.length){const item=config.items[cursor++];try{const series=await fetchSeries(item);renderOne(item,series);}catch(error){const target=$(`chart-${item.id}`);if(target)target.innerHTML=`<div class="chart-empty">${item.ticker} 차트 조회 실패</div>`;}}});
+  await Promise.all(workers);
+  config.items.forEach(item=>{
+    item.last=item.screenerLast;item.delta=item.screenerDelta;item.pct=item.screenerPct;
+    if(item.card){
+      item.card.querySelector('.quote-close').textContent=closeText(item,item.screenerLast);
+      item.card.querySelector('.quote-change').textContent=`${changeText(item,item.screenerDelta)} · ${pctText(item.screenerPct)}`;
+      item.card.querySelector('.quote-change').className=`quote-change ${colorClass(item.screenerDelta)}`;
+      item.card.querySelector('.quote-date').textContent=`거래량 ${fmt(item.activityVolume,0)}`;
+    }
+  });
+  requestAnimationFrame(resizeCharts);
+}
+function makeSummaryCell(ref){
+    const cell=document.createElement('div');
+    cell.className='summary-cell'+(ref.id==='kospi200night'||ref.id==='kosdaq150night'?' night-futures-summary-cell':'')+(ref.no===3?' m7-summary-cell':'')+(['nasdaq','sp500','sox','kospi200night','kosdaq150night'].includes(ref.id)?' soft-green-summary-cell':'');
+    const targetId=ref.chartId||ref.id;
+    const link=ref.url?`<a class="summary-chart-link" href="${ref.url}" target="_blank" rel="noopener noreferrer">차트</a>`:`<a class="summary-chart-link internal-chart-link" href="#chart-card-${targetId}" data-chart-target="chart-card-${targetId}">차트</a>`;
+    const ticker=ref.ticker||all.find(item=>item.id===ref.id)?.ticker;
+    const displayName=`${ref.no!==''&&ref.no!==null&&ref.no!==undefined?`${ref.no}. `:''}${ref.name}${ticker?` [${ticker}]`:''}`;
+    cell.innerHTML=`<div class="summary-titleline"><div class="summary-label">${displayName}</div>${link}</div><div class="summary-price-line"><div class="summary-quote-values"><div class="summary-price">${blank}</div><div class="summary-change neutral">${blank} · ${blank}</div>${all.find(item=>item.id===ref.id)?.unit==='stock'?`<div class="summary-session-box"><div class="summary-session-item"><span class="summary-session-label">프리마켓</span><span class="summary-session-value summary-pre-price">${blank}</span><span class="summary-session-delta summary-pre-delta neutral">${blank}</span><span class="summary-session-pct summary-pre-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">정규장</span><span class="summary-session-value summary-regular-price">${blank}</span><span class="summary-session-delta summary-regular-delta neutral">${blank}</span><span class="summary-session-pct summary-regular-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">애프터마켓</span><span class="summary-session-value summary-post-price">${blank}</span><span class="summary-session-delta summary-post-delta neutral">${blank}</span><span class="summary-session-pct summary-post-pct neutral">${blank}</span></div></div>`:''}</div></div>`;
+    cell.dataset.summaryId=ref.id;
+    return cell;
+  }
 function makeSummary(){
   const root=$('summaryRows');root.innerHTML='';
   const m7Names={'nvda-m7':'엔비디아',aapl:'애플',googl:'알파벳 Class A',msft:'마이크로소프트',amzn:'아마존',tsla:'테슬라',meta:'메타'};
@@ -99,8 +210,10 @@ function makeSummary(){
   const m7Rows=[[m7Refs[0]],[m7Refs[1],m7Refs[2]],[m7Refs[3],m7Refs[4]],[m7Refs[5],m7Refs[6]]];
   const rows=[
     {items:[{no:1,id:'nasdaq',name:'나스닥 종합'},{no:2,id:'sp500',name:'S&P 500'}],after:true},
-    ...m7Rows.map((items,index)=>({items,m7:true,after:index===3})),
+    ...m7Rows.map((items,index)=>({items,m7:true,firstM7:index===0,after:index===3})),
     {items:[{no:4,id:'sox',name:'필라델피아 반도체 지수',ticker:'^SOX'}],single:true,semis,after:true},
+    {activityType:'turnover'},
+    {activityType:'volume',after:true},
     {items:[{no:5,id:'skhy',name:'SK hynix ADR',ticker:'SKHY'}],single:true,after:true},
     {items:[{no:6,id:'us2y',name:'미국 2년물'},{no:7,id:'us10y',name:'미국 10년물'},{no:8,id:'us30y',name:'미국 30년물'}]},
     {items:[{no:9,id:'dxy',name:'달러인덱스'},{no:10,id:'usdkRW',name:'원/달러'}]},
@@ -113,15 +226,31 @@ function makeSummary(){
     const targetId=ref.chartId||ref.id;
     const link=ref.url?`<a class="summary-chart-link" href="${ref.url}" target="_blank" rel="noopener noreferrer">차트</a>`:`<a class="summary-chart-link internal-chart-link" href="#chart-card-${targetId}" data-chart-target="chart-card-${targetId}">차트</a>`;
     const ticker=ref.ticker||all.find(item=>item.id===ref.id)?.ticker;
-    const displayName=`${ref.no}. ${ref.name}${ticker?` [${ticker}]`:''}`;
+    const displayName=`${ref.no!==''&&ref.no!==null&&ref.no!==undefined?`${ref.no}. `:''}${ref.name}${ticker?` [${ticker}]`:''}`;
     cell.innerHTML=`<div class="summary-titleline"><div class="summary-label">${displayName}</div>${link}</div><div class="summary-price-line"><div class="summary-quote-values"><div class="summary-price">${blank}</div><div class="summary-change neutral">${blank} · ${blank}</div>${all.find(item=>item.id===ref.id)?.unit==='stock'?`<div class="summary-session-box"><div class="summary-session-item"><span class="summary-session-label">프리마켓</span><span class="summary-session-value summary-pre-price">${blank}</span><span class="summary-session-delta summary-pre-delta neutral">${blank}</span><span class="summary-session-pct summary-pre-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">정규장</span><span class="summary-session-value summary-regular-price">${blank}</span><span class="summary-session-delta summary-regular-delta neutral">${blank}</span><span class="summary-session-pct summary-regular-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">애프터마켓</span><span class="summary-session-value summary-post-price">${blank}</span><span class="summary-session-delta summary-post-delta neutral">${blank}</span><span class="summary-session-pct summary-post-pct neutral">${blank}</span></div></div>`:''}</div></div>`;
     cell.dataset.summaryId=ref.id;
     return cell;
   }
   rows.forEach(row=>{
-    if(!row.items.length)return;
+    if(row.activityType){
+      const type=row.activityType;
+      const config=ACTIVITY_TYPES[type];
+      const buttonRow=document.createElement('div');
+      buttonRow.className='summary-row activity-control-row'+(type==='volume'?' summary-divider-after':'');
+      buttonRow.style.setProperty('--cols',1);
+      const cell=document.createElement('div');cell.className='summary-cell activity-button-cell';
+      const button=document.createElement('button');button.type='button';button.className='activity-toggle';button.dataset.activityToggle=type;
+      button.textContent=`${config.label} ${config.expanded?'접기 ▲':'펼치기 ▼'}`;button.setAttribute('aria-expanded',String(config.expanded));
+      button.addEventListener('click',()=>toggleActivity(type));cell.appendChild(button);
+      const result=document.createElement('div');result.className='activity-result-content';result.dataset.activityResult=type;result.hidden=!config.expanded;
+      const grid=document.createElement('div');grid.className='activity-summary-grid';grid.id=config.containerId;
+      config.items.forEach(item=>grid.appendChild(makeSummaryCell({no:'',id:item.id,name:item.name,ticker:item.ticker})));
+      result.appendChild(grid);cell.appendChild(result);buttonRow.appendChild(cell);root.appendChild(buttonRow);
+      return;
+    }
+    if(!row.items?.length)return;
     const line=document.createElement('div');
-    line.className='summary-row'+(row.m7?' m7-summary-row':'')+(row.single?' single-index-row':'')+(row.before?' summary-divider-before':'')+(row.after?' summary-divider-after':'');
+    line.className='summary-row'+(row.m7?' m7-summary-row':'')+(row.firstM7?' m7-first-row':'')+(row.single?' single-index-row':'')+(row.before?' summary-divider-before':'')+(row.after?' summary-divider-after':'');
     line.style.setProperty('--cols',row.items.length);
     row.items.forEach(ref=>{
       const cell=makeSummaryCell(ref);
@@ -161,20 +290,27 @@ function makeCharts(){
       if(item.id==='sox'){
         const toggle=createSemiconductorToggle();toggle.classList.add('semiconductor-toggle-in-chart');card.appendChild(toggle);
         semiconductorWrap=document.createElement('div');semiconductorWrap.className='chart-semiconductor-content';semiconductorWrap.dataset.semiconductorContent='true';semiconductorWrap.hidden=!semiconductorExpanded;card.appendChild(semiconductorWrap);
+        const activityControls=document.createElement('div');activityControls.className='activity-chart-controls';
+        Object.entries(ACTIVITY_TYPES).forEach(([type,config])=>{
+          const controlCell=document.createElement('div');controlCell.className='activity-chart-control-cell';
+          const button=document.createElement('button');button.type='button';button.className='activity-toggle';button.dataset.activityToggle=type;button.textContent=`${config.label} ${config.expanded?'접기 ▲':'펼치기 ▼'}`;button.setAttribute('aria-expanded',String(config.expanded));button.addEventListener('click',()=>toggleActivity(type));controlCell.appendChild(button);
+          const activityGrid=document.createElement('div');activityGrid.className='activity-chart-grid';activityGrid.id=config.chartContainerId;activityGrid.hidden=!config.expanded;controlCell.appendChild(activityGrid);activityControls.appendChild(controlCell);
+        });
+        card.appendChild(activityControls);
       }
     });
   });
   updateSemiconductorToggles();
 }
 function workerUrl(ticker){return `${PROXY_BASE}/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=2y&interval=1d&events=div%2Csplits&includePrePost=true`)}`;}
-async function fetchSeries(item){if(item.source==='kredNightFutures'){const response=await fetch(`${PROXY_BASE}/?url=${encodeURIComponent(item.page)}`,{cache:'no-store'});if(!response.ok)throw new Error(`KRED HTTP ${response.status}`);const html=await response.text();const doc=new DOMParser().parseFromString(html,'text/html');const decode=s=>String(s||'').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/&minus;/gi,'−').replace(/&#8722;/g,'−');const bodyText=decode(doc.body?.textContent||'');const rawText=decode(html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]*>/g,' '));const text=(bodyText+' '+rawText).replace(/[\u00a0\u2007\u202f]/g,' ').replace(/\s+/g,' ');const title=item.id==='kospi200night'?'코스피 200 야간선물':'코스닥 150 야간선물';const quotePattern=/([0-9]{1,4}(?:,[0-9]{3})*\.\d{2})\s*([+−–-]\s*\d+(?:\.\d+)?)\s*\(\s*([+−–-]?\s*\d+(?:\.\d+)?)\s*%\s*\)/g;let matches=[...text.matchAll(quotePattern)];let match=null;if(matches.length){const titleIndex=text.indexOf(title);match=matches.find(m=>titleIndex<0||m.index>=titleIndex&&m.index<titleIndex+2200)||matches[0];}if(!match){const metas=[...doc.querySelectorAll('meta[property="og:description"],meta[name="description"],meta[name="twitter:description"]')].map(m=>m.content||'').join(' ');const candidate=(bodyText+' '+decode(metas)).replace(/\s+/g,' ');match=candidate.match(new RegExp(quotePattern.source));}if(!match){const titleIndex=text.indexOf(title);const section=text.slice(titleIndex>=0?titleIndex:0,(titleIndex>=0?titleIndex:0)+2500);const priceMatch=section.match(/(?:^|\s)([0-9]{1,4}(?:,[0-9]{3})*\.\d{2})(?=\s|$)/);const changeMatch=section.match(/([+−–-]\s*\d+(?:\.\d+)?)\s*\(\s*([+−–-]?\s*\d+(?:\.\d+)?)\s*%\s*\)/);if(priceMatch&&changeMatch)match=[priceMatch[1],changeMatch[1],changeMatch[2]];}if(!match)throw new Error('KRED 시세를 읽지 못했습니다. Worker 응답에 현재가가 포함되는지 확인해 주세요.');const num=v=>Number(String(v).replace(/,/g,'').replace(/[−–]/g,'-').replace(/\s/g,''));const price=num(match[1]),delta=num(match[2]),pct=num(match[3]);if(!Number.isFinite(price)||!Number.isFinite(delta)||!Number.isFinite(pct)||price<=0)throw new Error('KRED 시세 형식이 올바르지 않습니다');const reference=price-delta;const nowMs=Date.now();const nowDate=new Date(nowMs);const sessionStart=new Date(nowDate);const hour=nowDate.getHours();if(hour<18)sessionStart.setDate(sessionStart.getDate()-1);sessionStart.setHours(18,0,0,0);let sessionEnd=new Date(sessionStart);sessionEnd.setDate(sessionEnd.getDate()+1);sessionEnd.setHours(6,0,0,0);const now=Math.floor(Math.min(nowMs,sessionEnd.getTime())/1000);const start=Math.floor(sessionStart.getTime()/1000);const chartEnd=Math.max(start+60,now);return {nightFutures:true,current:price,delta,pct,reference,values:[{time:start,value:reference},{time:chartEnd,value:price}],exchange:'KRED',sessionStart:start,sessionEnd:Math.floor(sessionEnd.getTime()/1000)};}if(item.source==='tradingview'||item.source==='tradingviewEmbed'||item.source==='nightFuturesEmbed')return {tradingView:true,embed:item.source==='tradingviewEmbed',nightFutures:item.source==='nightFuturesEmbed',values:[]};const intradayPromise=item.unit==='stock'?fetch(`${PROXY_BASE}/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(item.ticker)}?range=5d&interval=1m&events=div%2Csplits&includePrePost=true`)}`,{cache:'no-store'}).catch(()=>null):null;const target=item.source==='treasury'?`https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value=${new Date().getFullYear()}`:item.source==='fred'?`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${encodeURIComponent(item.ticker)}&cosd=2024-01-01`: `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(item.ticker)}?range=2y&interval=1d&events=div%2Csplits&includePrePost=true`;const response=await fetch(`${PROXY_BASE}/?url=${encodeURIComponent(target)}`,{cache:'no-store'});if(!response.ok)throw new Error(`HTTP ${response.status}`);if(item.source==='treasury'){const xml=await response.text();const doc=new DOMParser().parseFromString(xml,'application/xml');const entries=[...doc.getElementsByTagName('entry')];const values=entries.map(entry=>{const dateNode=entry.getElementsByTagName('d:NEW_DATE')[0]||entry.getElementsByTagName('NEW_DATE')[0];const field=item.treasuryField||'BC_2YEAR';const valueNode=[...entry.getElementsByTagName('*')].find(node=>node.localName===field);const date=(dateNode?.textContent||'').slice(0,10);const value=Number(valueNode?.textContent);return {date,value};}).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date)&&Number.isFinite(x.value)&&x.value>0).sort((a,b)=>a.date.localeCompare(b.date)).map(x=>({time:Math.floor(Date.parse(x.date+'T00:00:00Z')/1000),value:x.value}));if(values.length<2)throw new Error(`${item.name} 데이터 없음`);return {values,currency:'%',exchange:'U.S. Treasury'};}if(item.source==='fred'){const csv=await response.text();const lines=csv.trim().split(/\r?\n/);const values=lines.slice(1).map(line=>{const parts=line.split(',');const date=parts[0];const value=Number(parts[1]);return {date,value};}).filter(x=>x.date&&x.date!=='date'&&Number.isFinite(x.value)&&x.value>-100&&/^\d{4}-\d{2}-\d{2}$/.test(x.date)).map(x=>({time:Math.floor(Date.parse(x.date+'T00:00:00Z')/1000),value:x.value}));if(values.length<2)throw new Error('미국 2년물 금리 데이터 없음');return {values,currency:'%',exchange:'FRED'};}const json=await response.json();const result=json?.chart?.result?.[0];if(!result)throw new Error(json?.chart?.error?.description||'시세 데이터 없음');const timestamps=result.timestamp||[],quotes=result.indicators?.quote?.[0]||{},closes=quotes.close||[];const values=[];for(let i=0;i<timestamps.length;i++){const close=closes[i];if(close!==null&&close!==undefined&&Number.isFinite(Number(close)))values.push({time:timestamps[i],value:Number(close)});}if(values.length<2)throw new Error('차트 데이터 부족');const meta=result.meta||{};const numOrNull=value=>value===null||value===undefined||value===''?null:(Number.isFinite(Number(value))?Number(value):null);
+async function fetchSeries(item){if(item.source==='kredNightFutures'){const response=await fetch(`${PROXY_BASE}/?url=${encodeURIComponent(item.page)}`,{cache:'no-store'});if(!response.ok)throw new Error(`KRED HTTP ${response.status}`);const html=await response.text();const doc=new DOMParser().parseFromString(html,'text/html');const decode=s=>String(s||'').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/&minus;/gi,'−').replace(/&#8722;/g,'−');const bodyText=decode(doc.body?.textContent||'');const rawText=decode(html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]*>/g,' '));const text=(bodyText+' '+rawText).replace(/[\u00a0\u2007\u202f]/g,' ').replace(/\s+/g,' ');const title=item.id==='kospi200night'?'코스피 200 야간선물':'코스닥 150 야간선물';const quotePattern=/([0-9]{1,4}(?:,[0-9]{3})*\.\d{2})\s*([+−–-]\s*\d+(?:\.\d+)?)\s*\(\s*([+−–-]?\s*\d+(?:\.\d+)?)\s*%\s*\)/g;let matches=[...text.matchAll(quotePattern)];let match=null;if(matches.length){const titleIndex=text.indexOf(title);match=matches.find(m=>titleIndex<0||m.index>=titleIndex&&m.index<titleIndex+2200)||matches[0];}if(!match){const metas=[...doc.querySelectorAll('meta[property="og:description"],meta[name="description"],meta[name="twitter:description"]')].map(m=>m.content||'').join(' ');const candidate=(bodyText+' '+decode(metas)).replace(/\s+/g,' ');match=candidate.match(new RegExp(quotePattern.source));}if(!match){const titleIndex=text.indexOf(title);const section=text.slice(titleIndex>=0?titleIndex:0,(titleIndex>=0?titleIndex:0)+2500);const priceMatch=section.match(/(?:^|\s)([0-9]{1,4}(?:,[0-9]{3})*\.\d{2})(?=\s|$)/);const changeMatch=section.match(/([+−–-]\s*\d+(?:\.\d+)?)\s*\(\s*([+−–-]?\s*\d+(?:\.\d+)?)\s*%\s*\)/);if(priceMatch&&changeMatch)match=[priceMatch[1],changeMatch[1],changeMatch[2]];}if(!match)throw new Error('KRED 시세를 읽지 못했습니다. Worker 응답에 현재가가 포함되는지 확인해 주세요.');const num=v=>Number(String(v).replace(/,/g,'').replace(/[−–]/g,'-').replace(/\s/g,''));const price=num(match[1]),delta=num(match[2]),pct=num(match[3]);if(!Number.isFinite(price)||!Number.isFinite(delta)||!Number.isFinite(pct)||price<=0)throw new Error('KRED 시세 형식이 올바르지 않습니다');const reference=price-delta;const nowMs=Date.now();const nowDate=new Date(nowMs);const sessionStart=new Date(nowDate);const hour=nowDate.getHours();if(hour<18)sessionStart.setDate(sessionStart.getDate()-1);sessionStart.setHours(18,0,0,0);let sessionEnd=new Date(sessionStart);sessionEnd.setDate(sessionEnd.getDate()+1);sessionEnd.setHours(6,0,0,0);const now=Math.floor(Math.min(nowMs,sessionEnd.getTime())/1000);const start=Math.floor(sessionStart.getTime()/1000);const chartEnd=Math.max(start+60,now);return {nightFutures:true,current:price,delta,pct,reference,values:[{time:start,value:reference},{time:chartEnd,value:price}],exchange:'KRED',sessionStart:start,sessionEnd:Math.floor(sessionEnd.getTime()/1000)};}if(item.source==='tradingview'||item.source==='tradingviewEmbed'||item.source==='nightFuturesEmbed')return {tradingView:true,embed:item.source==='tradingviewEmbed',nightFutures:item.source==='nightFuturesEmbed',values:[]};const intradayPromise=item.unit==='stock'&&!item.skipIntraday?fetch(`${PROXY_BASE}/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(item.ticker)}?range=5d&interval=1m&events=div%2Csplits&includePrePost=true`)}`,{cache:'no-store'}).catch(()=>null):null;const target=item.source==='treasury'?`https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value=${new Date().getFullYear()}`:item.source==='fred'?`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${encodeURIComponent(item.ticker)}&cosd=2024-01-01`: `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(item.ticker)}?range=2y&interval=1d&events=div%2Csplits&includePrePost=true`;const response=await fetch(`${PROXY_BASE}/?url=${encodeURIComponent(target)}`,{cache:'no-store'});if(!response.ok)throw new Error(`HTTP ${response.status}`);if(item.source==='treasury'){const xml=await response.text();const doc=new DOMParser().parseFromString(xml,'application/xml');const entries=[...doc.getElementsByTagName('entry')];const values=entries.map(entry=>{const dateNode=entry.getElementsByTagName('d:NEW_DATE')[0]||entry.getElementsByTagName('NEW_DATE')[0];const field=item.treasuryField||'BC_2YEAR';const valueNode=[...entry.getElementsByTagName('*')].find(node=>node.localName===field);const date=(dateNode?.textContent||'').slice(0,10);const value=Number(valueNode?.textContent);return {date,value};}).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date)&&Number.isFinite(x.value)&&x.value>0).sort((a,b)=>a.date.localeCompare(b.date)).map(x=>({time:Math.floor(Date.parse(x.date+'T00:00:00Z')/1000),value:x.value}));if(values.length<2)throw new Error(`${item.name} 데이터 없음`);return {values,currency:'%',exchange:'U.S. Treasury'};}if(item.source==='fred'){const csv=await response.text();const lines=csv.trim().split(/\r?\n/);const values=lines.slice(1).map(line=>{const parts=line.split(',');const date=parts[0];const value=Number(parts[1]);return {date,value};}).filter(x=>x.date&&x.date!=='date'&&Number.isFinite(x.value)&&x.value>-100&&/^\d{4}-\d{2}-\d{2}$/.test(x.date)).map(x=>({time:Math.floor(Date.parse(x.date+'T00:00:00Z')/1000),value:x.value}));if(values.length<2)throw new Error('미국 2년물 금리 데이터 없음');return {values,currency:'%',exchange:'FRED'};}const json=await response.json();const result=json?.chart?.result?.[0];if(!result)throw new Error(json?.chart?.error?.description||'시세 데이터 없음');const timestamps=result.timestamp||[],quotes=result.indicators?.quote?.[0]||{},closes=quotes.close||[];const values=[];for(let i=0;i<timestamps.length;i++){const close=closes[i];if(close!==null&&close!==undefined&&Number.isFinite(Number(close)))values.push({time:timestamps[i],value:Number(close)});}if(values.length<2)throw new Error('차트 데이터 부족');const meta=result.meta||{};const numOrNull=value=>value===null||value===undefined||value===''?null:(Number.isFinite(Number(value))?Number(value):null);
 // Yahoo의 2년/일봉 응답은 preMarketPrice·postMarketPrice를 누락하는 경우가 있어,
 // 별도의 5일/1분봉(확장거래 포함)에서 각 세션의 마지막 체결가를 보완한다.
 let sessionQuotes={};
 if(item.unit==='stock'){
   try{
     const intradayResponse=await intradayPromise;
-    if(intradayResponse.ok){
+    if(intradayResponse?.ok){
       const intradayJson=await intradayResponse.json();
       const intraday=intradayJson?.chart?.result?.[0];
       const times=intraday?.timestamp||[];
@@ -259,7 +395,7 @@ async function refreshAll(){
   $('status').parentElement.querySelector('.live-dot').classList.remove('active');
   let success=0,fail=0;
   await refreshMarketCaps();
-  const queue=all.filter(item=>!item.semiconductorCandidate||item.summaryActive);
+  const queue=all.filter(item=>(!item.semiconductorCandidate||item.summaryActive)&&(!item.activityType||ACTIVITY_TYPES[item.activityType]?.expanded));
   let cursor=0;
   async function worker(){
     while(cursor<queue.length){

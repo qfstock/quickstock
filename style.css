@@ -262,3 +262,61 @@
   .semiconductor-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}
   .semiconductor-summary-grid .summary-cell{padding:7px 7px;}
 }
+
+/* 미국 주식 거래대금/거래량: SOX 카드처럼 어두운 카드 안에 밝은 버튼 */
+.activity-control-row{grid-template-columns:minmax(0,1fr);gap:5px;}
+.activity-button-cell{min-width:0;padding:8px;background:#eef1f5;border:1px solid #e2e7ee;box-shadow:none;border-radius:9px;}
+.activity-toggle{display:block;width:100%;min-height:36px;padding:8px 6px;border:1px solid #edf0f5;border-radius:8px;background:var(--soft);color:#536276;font-size:11px;font-weight:800;letter-spacing:-.25px;cursor:pointer;text-align:center;}
+.activity-toggle:active{background:#eef1f5;}
+.activity-toggle:focus-visible{outline:2px solid #8aa6c8;outline-offset:2px;}
+.activity-result-content{margin-top:8px;padding-top:8px;border-top:0;}
+.activity-result-content .activity-summary-grid{margin:0;}
+.activity-result-content .summary-cell{background:#f7f9fc;}
+.activity-chart-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;margin-top:9px;}
+.activity-chart-control-cell{min-width:0;padding:7px;background:#eef1f5;border:1px solid #e2e7ee;border-radius:9px;}
+.activity-chart-control-cell .activity-toggle{font-size:10px;}
+.activity-chart-grid{margin-top:7px;}
+.activity-error{grid-column:1/-1;min-height:64px;padding:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;color:#9a5312;font-size:10px;line-height:1.5;overflow-wrap:anywhere;}
+.activity-summary-grid,.activity-chart-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;min-width:0;}
+.activity-summary-grid .summary-cell{background:var(--soft);border-color:#edf0f5;padding:8px 8px;}
+.activity-summary-grid .summary-label{font-size:10px;}
+.activity-summary-grid .summary-price{font-size:11px;}
+.activity-summary-grid .summary-change{font-size:9px;}
+.activity-summary-grid .summary-session-box{display:grid;}
+.activity-chart-control-row{margin-top:7px;}
+.activity-chart-grid{margin-top:7px;}
+.activity-chart-card{min-width:0;padding:8px 7px 6px;background:var(--soft);border-color:#e8edf3;box-shadow:none;}
+.activity-chart-card .chart-top{display:block;margin-bottom:5px;}
+.activity-chart-card .chart-title h3{display:block;font-size:10px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.activity-chart-card .quote-block{text-align:left;margin-top:4px;}
+.activity-chart-card .quote-close{font-size:11px;}
+.activity-chart-card .quote-change{font-size:9px;}
+.activity-chart-card .quote-date{font-size:8px;}
+.activity-chart-card .chart-area{height:105px;}
+.activity-chart-card .chart-range-toolbar{display:none!important;}
+.activity-chart-card .chart-foot{font-size:7px;flex-wrap:wrap;}
+.activity-error{grid-column:1/-1;min-height:70px;}
+@media(max-width:760px){
+  .activity-summary-grid,.activity-chart-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}
+  .activity-summary-grid .summary-cell{padding:7px 6px;}
+  .activity-summary-grid .summary-label{font-size:9px;}
+  .activity-summary-grid .summary-price{font-size:10px;}
+  .activity-summary-grid .summary-change{font-size:8px;}
+  .activity-chart-card .chart-area{height:95px;}
+}
+
+
+
+/* M7 첫 번째 줄만 아래 2분할 종목 카드와 같은 폭으로 중앙 배치 */
+.summary-row.m7-first-row{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.summary-row.m7-first-row > .summary-cell{
+  grid-column:1 / -1;
+  width:calc(50% - 2.5px);
+  justify-self:center;
+}
+@media(max-width:520px){
+  .summary-row.m7-first-row{gap:3px;}
+  .summary-row.m7-first-row > .summary-cell{width:calc(50% - 1.5px);}
+}
